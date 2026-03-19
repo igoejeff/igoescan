@@ -1634,6 +1634,10 @@ async function startScan() {
   document.getElementById('error-section').style.display='none';
   document.getElementById('loading-section').style.display='block';
   document.getElementById('loader-domain-name').textContent=origin.replace('https://','').replace('http://','');
+  /* Scroll down to loading indicator so user sees it's working */
+  setTimeout(function(){
+    document.getElementById('loading-section').scrollIntoView({behavior:'smooth', block:'center'});
+  }, 100);
   document.getElementById('scan-btn').disabled=true;
 
   for(var s=1;s<=6;s++){var el=document.getElementById('step-'+s);if(el){el.classList.remove('active','done');var io=el.querySelector('.step-orb');if(io)io.innerHTML='<i class="fas '+['fa-globe','fa-chart-line','fa-map-marker-alt','fa-user-md','fa-robot','fa-file-alt'][s-1]+'"></i>';}}
