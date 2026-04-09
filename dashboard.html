@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>IGOe Scan — Lead Dashboard</title>
+<link rel="icon" href="images/igoe-scan-logo.png"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1a2535;min-height:100vh}
+
+/* ── NAV ── */
+.dash-nav{background:#0c1a35;padding:0 28px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.dash-nav .brand{display:flex;align-items:center;gap:12px}
+.dash-nav img{height:30px;filter:brightness(10)}
+.dash-nav .brand-text{color:#fff;font-weight:700;font-size:1rem}
+.dash-nav .brand-text span{color:#00c2e0}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-badge{background:rgba(0,194,224,.15);color:#00c2e0;border:1px solid rgba(0,194,224,.3);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:600}
+.btn-back{color:#aab4c4;font-size:.82rem;text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
+.btn-back:hover{color:#fff}
+
+/* ── MAIN ── */
+.dash-main{max-width:1200px;margin:0 auto;padding:32px 24px}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.stat-card .sc-val{font-size:2rem;font-weight:700;color:#0c1a35;line-height:1}
+.stat-card .sc-lbl{font-size:.78rem;color:#64748b;margin-top:6px;font-weight:500}
+.stat-card .sc-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:12px}
+.ic-blue{background:#eff6ff;color:#2176d9}
+.ic-green{background:#f0fdf6;color:#18c45a}
+.ic-cyan{background:#ecfeff;color:#0099b8}
+.ic-orange{background:#fff7ed;color:#f07000}
+
+/* ── SECTION HEADERS ── */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-hdr h2{font-size:1rem;font-weight:700;color:#0c1a35;display:flex;align-items:center;gap:8px}
+.section-hdr h2 i{color:#00c2e0}
+
+/* ── SEARCH/FILTER BAR ── */
+.filter-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.filter-bar input{flex:1;min-width:200px;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.85rem;font-family:inherit;outline:none;transition:border .2s}
+.filter-bar input:focus{border-color:#00c2e0}
+.filter-bar select{padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.85rem;font-family:inherit;outline:none;background:#fff;cursor:pointer}
+.btn-refresh{padding:10px 18px;background:#0c1a35;color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s}
+.btn-refresh:hover{background:#1a3060}
+.btn-export{padding:10px 18px;background:#00c2e0;color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s}
+.btn-export:hover{background:#0099b8}
+
+/* ── TABLE ── */
+.table-wrap{background:#fff;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);margin-bottom:32px}
+.leads-table{width:100%;border-collapse:collapse}
+.leads-table th{background:#f8fafc;padding:12px 16px;text-align:left;font-size:.75rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0}
+.leads-table td{padding:14px 16px;font-size:.84rem;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.leads-table tr:last-child td{border-bottom:none}
+.leads-table tr:hover td{background:#f8fafc}
+.source-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.src-popup{background:#ecfeff;color:#0099b8}
+.src-contact{background:#f0fdf6;color:#18c45a}
+.src-other{background:#f1f5f9;color:#64748b}
+.td-email a{color:#2176d9;text-decoration:none}
+.td-email a:hover{text-decoration:underline}
+.td-website a{color:#0099b8;text-decoration:none;font-size:.8rem}
+.td-website a:hover{text-decoration:underline}
+.td-date{color:#94a3b8;font-size:.78rem;white-space:nowrap}
+.td-name{font-weight:600;color:#0c1a35}
+.btn-del{background:none;border:none;color:#cbd5e1;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .2s}
+.btn-del:hover{color:#e82020}
+
+/* ── EMPTY STATE ── */
+.empty-state{padding:60px 20px;text-align:center;color:#94a3b8}
+.empty-state i{font-size:2.5rem;margin-bottom:16px;display:block;color:#cbd5e1}
+.empty-state p{font-size:.9rem}
+
+/* ── LOADING ── */
+.loading-row td{text-align:center;padding:40px;color:#94a3b8}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-top:1px solid #f1f5f9}
+.page-info{font-size:.82rem;color:#64748b}
+.page-btns{display:flex;gap:8px}
+.page-btn{padding:6px 14px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .2s}
+.page-btn:hover:not(:disabled){background:#0c1a35;color:#fff;border-color:#0c1a35}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+.page-btn.active{background:#0c1a35;color:#fff;border-color:#0c1a35}
+
+/* ── GHL FORM SECTION ── */
+.ghl-section{background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:28px;box-shadow:0 1px 4px rgba(0,0,0,.05);margin-bottom:32px}
+.ghl-placeholder{background:#f8fafc;border:2px dashed #e2e8f0;border-radius:12px;padding:48px 24px;text-align:center;color:#94a3b8}
+.ghl-placeholder i{font-size:2rem;margin-bottom:12px;display:block;color:#cbd5e1}
+.ghl-placeholder p{font-size:.88rem;line-height:1.6;margin-bottom:16px}
+.ghl-input-wrap{display:flex;gap:10px;max-width:500px;margin:0 auto}
+.ghl-input-wrap input{flex:1;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.85rem;font-family:inherit;outline:none}
+.ghl-input-wrap input:focus{border-color:#00c2e0}
+.btn-connect{padding:10px 20px;background:#00c2e0;color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}
+.btn-connect:hover{background:#0099b8}
+.ghl-embed-wrap{min-height:200px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:#0c1a35;color:#fff;padding:12px 20px;border-radius:12px;font-size:.85rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .leads-table th:nth-child(4),.leads-table td:nth-child(4),
+  .leads-table th:nth-child(5),.leads-table td:nth-child(5){display:none}
+}
+@media(max-width:480px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .dash-main{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="dash-nav">
+  <div class="brand">
+    <img src="images/igoe-scan-logo.png" alt="IGOe Scan"/>
+    <span class="brand-text">IGOe <span>Scan</span> Dashboard</span>
+  </div>
+  <div class="nav-right">
+    <span class="nav-badge" id="live-count"><i class="fas fa-circle" style="font-size:.5rem;margin-right:4px"></i> Loading...</span>
+    <a href="index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Scanner</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="dash-main">
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="sc-icon ic-blue"><i class="fas fa-users"></i></div>
+      <div class="sc-val" id="stat-total">—</div>
+      <div class="sc-lbl">Total Leads</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-icon ic-cyan"><i class="fas fa-search"></i></div>
+      <div class="sc-val" id="stat-popup">—</div>
+      <div class="sc-lbl">From Scanner Popup</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-icon ic-green"><i class="fas fa-envelope"></i></div>
+      <div class="sc-val" id="stat-contact">—</div>
+      <div class="sc-lbl">From Contact Form</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-icon ic-orange"><i class="fas fa-calendar-day"></i></div>
+      <div class="sc-val" id="stat-today">—</div>
+      <div class="sc-lbl">Today</div>
+    </div>
+  </div>
+
+  <!-- GHL FORM SECTION -->
+  <div class="section-hdr">
+    <h2><i class="fas fa-plug"></i> GoHighLevel Integration</h2>
+  </div>
+  <div class="ghl-section">
+    <div id="ghl-area">
+      <div class="ghl-embed-wrap">
+        <iframe
+          src="https://link.gohighlevel.com/widget/form/Va7ZpzJeDKlJiVXqRzci"
+          style="width:100%;height:543px;border:none;border-radius:12px;display:block;"
+          id="inline-Va7ZpzJeDKlJiVXqRzci"
+          data-layout="{'id':'INLINE'}"
+          data-trigger-type="alwaysShow"
+          data-activation-type="alwaysActivated"
+          data-deactivation-type="neverDeactivate"
+          data-form-name="Igoe Scan Form Submit"
+          data-height="543"
+          data-layout-iframe-id="inline-Va7ZpzJeDKlJiVXqRzci"
+          data-form-id="Va7ZpzJeDKlJiVXqRzci"
+          title="Igoe Scan Form Submit">
+        </iframe>
+        <script src="https://link.gohighlevel.com/js/form_embed.js"></script>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADS TABLE -->
+  <div class="section-hdr">
+    <h2><i class="fas fa-inbox"></i> Lead Submissions</h2>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <input type="text" id="search-input" placeholder="Search by name, email, or practice…" oninput="filterLeads()"/>
+    <select id="source-filter" onchange="filterLeads()">
+      <option value="">All Sources</option>
+      <option value="email-popup">Scanner Popup</option>
+      <option value="contact-form">Contact Form</option>
+    </select>
+    <button class="btn-refresh" onclick="loadLeads()"><i class="fas fa-sync-alt"></i> Refresh</button>
+    <button class="btn-export" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="leads-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Practice</th>
+          <th>Website</th>
+          <th>Source</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="leads-tbody">
+        <tr class="loading-row"><td colspan="7"><i class="fas fa-spinner fa-spin"></i> Loading leads…</td></tr>
+      </tbody>
+    </table>
+    <div class="pagination" id="pagination" style="display:none">
+      <span class="page-info" id="page-info"></span>
+      <div class="page-btns">
+        <button class="page-btn" id="btn-prev" onclick="changePage(-1)"><i class="fas fa-chevron-left"></i> Prev</button>
+        <button class="page-btn" id="btn-next" onclick="changePage(1)">Next <i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+var allLeads = [];
+var filteredLeads = [];
+var currentPage = 1;
+var perPage = 20;
+
+/* ── LOAD LEADS ── */
+async function loadLeads() {
+  try {
+    var res = await fetch('tables/contact_leads?limit=500&sort=created_at');
+    var data = await res.json();
+    allLeads = (data.data || []).sort(function(a,b){ return b.created_at - a.created_at; });
+    updateStats();
+    filterLeads();
+  } catch(e) {
+    document.getElementById('leads-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#e82020"><i class="fas fa-exclamation-triangle"></i> Could not load leads. Make sure you\'re viewing this on the live site.</td></tr>';
+  }
+}
+
+/* ── STATS ── */
+function updateStats() {
+  var total = allLeads.length;
+  var popup = allLeads.filter(function(l){ return l.source === 'email-popup'; }).length;
+  var contact = allLeads.filter(function(l){ return l.source === 'contact-form'; }).length;
+  var today = allLeads.filter(function(l){
+    var d = new Date(l.created_at);
+    var now = new Date();
+    return d.toDateString() === now.toDateString();
+  }).length;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-popup').textContent = popup;
+  document.getElementById('stat-contact').textContent = contact;
+  document.getElementById('stat-today').textContent = today;
+  document.getElementById('live-count').innerHTML = '<i class="fas fa-circle" style="font-size:.5rem;margin-right:4px;color:#18c45a"></i> ' + total + ' leads';
+}
+
+/* ── FILTER ── */
+function filterLeads() {
+  var search = document.getElementById('search-input').value.toLowerCase();
+  var source = document.getElementById('source-filter').value;
+  filteredLeads = allLeads.filter(function(l) {
+    var matchSearch = !search ||
+      (l.name||'').toLowerCase().includes(search) ||
+      (l.email||'').toLowerCase().includes(search) ||
+      (l.practice_name||'').toLowerCase().includes(search) ||
+      (l.website||'').toLowerCase().includes(search);
+    var matchSource = !source || l.source === source;
+    return matchSearch && matchSource;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+/* ── RENDER TABLE ── */
+function renderTable() {
+  var tbody = document.getElementById('leads-tbody');
+  var pagination = document.getElementById('pagination');
+
+  if (filteredLeads.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox"></i><p>No leads found. Submissions will appear here once someone fills out the scanner popup or contact form.</p></div></td></tr>';
+    pagination.style.display = 'none';
+    return;
+  }
+
+  var start = (currentPage - 1) * perPage;
+  var end = Math.min(start + perPage, filteredLeads.length);
+  var pageLeads = filteredLeads.slice(start, end);
+  var totalPages = Math.ceil(filteredLeads.length / perPage);
+
+  tbody.innerHTML = pageLeads.map(function(l) {
+    var date = l.created_at ? new Date(l.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    var sourceBadge = l.source === 'email-popup'
+      ? '<span class="source-badge src-popup"><i class="fas fa-search" style="margin-right:4px;font-size:.65rem"></i>Scanner</span>'
+      : l.source === 'contact-form'
+      ? '<span class="source-badge src-contact"><i class="fas fa-envelope" style="margin-right:4px;font-size:.65rem"></i>Contact</span>'
+      : '<span class="source-badge src-other">' + (l.source||'Unknown') + '</span>';
+    var website = l.website ? '<a href="' + (l.website.startsWith('http') ? l.website : 'https://'+l.website) + '" target="_blank">' + l.website + '</a>' : '—';
+    return '<tr>' +
+      '<td class="td-name">' + (l.name || '—') + '</td>' +
+      '<td class="td-email"><a href="mailto:' + (l.email||'') + '">' + (l.email||'—') + '</a></td>' +
+      '<td>' + (l.practice_name || '—') + '</td>' +
+      '<td class="td-website">' + website + '</td>' +
+      '<td>' + sourceBadge + '</td>' +
+      '<td class="td-date">' + date + '</td>' +
+      '<td><button class="btn-del" onclick="deleteLead(\'' + l.id + '\')" title="Delete"><i class="fas fa-trash"></i></button></td>' +
+      '</tr>';
+  }).join('');
+
+  /* Pagination */
+  pagination.style.display = 'flex';
+  document.getElementById('page-info').textContent = 'Showing ' + (start+1) + '–' + end + ' of ' + filteredLeads.length + ' leads';
+  document.getElementById('btn-prev').disabled = currentPage <= 1;
+  document.getElementById('btn-next').disabled = currentPage >= totalPages;
+}
+
+function changePage(dir) {
+  currentPage += dir;
+  renderTable();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── DELETE ── */
+async function deleteLead(id) {
+  if (!confirm('Delete this lead? This cannot be undone.')) return;
+  try {
+    await fetch('tables/contact_leads/' + id, { method: 'DELETE' });
+    allLeads = allLeads.filter(function(l){ return l.id !== id; });
+    updateStats();
+    filterLeads();
+    showToast('Lead deleted.');
+  } catch(e) {
+    showToast('Could not delete lead.');
+  }
+}
+
+/* ── EXPORT CSV ── */
+function exportCSV() {
+  if (filteredLeads.length === 0) { showToast('No leads to export.'); return; }
+  var headers = ['Name','Email','Practice','Website','Source','Date','Message'];
+  var rows = filteredLeads.map(function(l) {
+    var date = l.created_at ? new Date(l.created_at).toLocaleDateString() : '';
+    return [
+      '"'+(l.name||'').replace(/"/g,'""')+'"',
+      '"'+(l.email||'').replace(/"/g,'""')+'"',
+      '"'+(l.practice_name||'').replace(/"/g,'""')+'"',
+      '"'+(l.website||'').replace(/"/g,'""')+'"',
+      '"'+(l.source||'').replace(/"/g,'""')+'"',
+      '"'+date+'"',
+      '"'+(l.message||'').replace(/"/g,'""')+'"'
+    ].join(',');
+  });
+  var csv = [headers.join(',')].concat(rows).join('\n');
+  var blob = new Blob([csv], {type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'igoe-scan-leads-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('CSV exported!');
+}
+
+/* ── GHL CONNECT ── */
+function connectGHL() {
+  var val = document.getElementById('ghl-url-input').value.trim();
+  if (!val) { showToast('Please paste your GHL embed code or URL.'); return; }
+  var area = document.getElementById('ghl-area');
+  if (val.includes('<iframe') || val.includes('<script')) {
+    area.innerHTML = '<div class="ghl-embed-wrap">' + val + '</div>';
+  } else {
+    area.innerHTML = '<div class="ghl-embed-wrap"><iframe src="' + val + '" width="100%" height="500" frameborder="0" style="border-radius:10px"></iframe></div>';
+  }
+  localStorage.setItem('igoe_ghl_embed', val);
+  showToast('GHL form connected!');
+}
+
+/* ── TOAST ── */
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+/* ── INIT ── */
+window.addEventListener('load', function() {
+  /* Restore GHL embed if saved */
+  var saved = localStorage.getItem('igoe_ghl_embed');
+  if (saved) {
+    document.getElementById('ghl-url-input').value = saved;
+    connectGHL();
+  }
+  loadLeads();
+  /* Auto-refresh every 60 seconds */
+  setInterval(loadLeads, 60000);
+});
+</script>
+</body>
+</html>
