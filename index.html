@@ -246,6 +246,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 
 /* ── LOADING ──────────────────────────────────────── */
 #loading-section{display:none;padding:72px 2rem;max-width:520px;margin:0 auto;text-align:center}
+@keyframes tdot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
 .lwrap{background:var(--white);border-radius:20px;padding:46px 38px;border:1px solid var(--bdr);box-shadow:var(--shadow-md)}
 .lorb{width:64px;height:64px;margin:0 auto 20px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;animation:orb 2s ease-in-out infinite}
 @keyframes orb{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(26,80,150,0)}50%{transform:scale(1.05);box-shadow:0 0 0 12px rgba(26,80,150,.07)}}
@@ -560,7 +561,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 
 <!-- ── NAV ── -->
 <nav class="nav">
-  <a href="https://chealthconnections.com" class="nav-brand" target="_blank" rel="noopener">
+  <a href="/" class="nav-brand">
     <img src="images/igoe-scan-logo.png" alt="IGOE SCAN" class="nav-logo" loading="eager" style="height:32px;width:auto;mix-blend-mode:multiply"/>
   </a>
   <div style="display:flex;align-items:center;gap:14px">
@@ -661,7 +662,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
   <div class="lwrap">
     <div class="lorb"><i class="fas fa-search"></i></div>
     <div class="ltitle">Scanning <span class="ldomain" id="loader-domain-name"></span></div>
-    <p class="lsub">Running 40+ checks across SEO, GEO, E-E-A-T &amp; AI Crawlers&hellip;</p>
+    <p class="lsub">Running 80+ checks across 9 categories&hellip;</p>
     <div class="prog-track"><div class="progress-bar" id="progress-bar"></div></div>
     <div class="slist">
       <div class="lstep" id="step-1"><div class="step-orb"><i class="fas fa-globe"></i></div><span>Connecting via 4 proxies&hellip;</span></div>
@@ -670,6 +671,18 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
       <div class="lstep" id="step-4"><div class="step-orb"><i class="fas fa-user-md"></i></div><span>Evaluating E-E-A-T&hellip;</span></div>
       <div class="lstep" id="step-5"><div class="step-orb"><i class="fas fa-robot"></i></div><span>Checking AI crawlers&hellip;</span></div>
       <div class="lstep" id="step-6"><div class="step-orb"><i class="fas fa-file-alt"></i></div><span>Generating report&hellip;</span></div>
+    </div>
+    <!-- Still working message shown after steps complete -->
+    <div id="still-working" style="display:none;margin-top:22px;padding:14px 20px;background:rgba(0,194,224,0.08);border:1px solid rgba(0,194,224,0.25);border-radius:12px;text-align:center">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px">
+        <div style="display:flex;gap:5px;align-items:center">
+          <span class="thinking-dot" style="width:8px;height:8px;border-radius:50%;background:#00c2e0;display:inline-block;animation:tdot 1.2s infinite ease-in-out"></span>
+          <span class="thinking-dot" style="width:8px;height:8px;border-radius:50%;background:#00c2e0;display:inline-block;animation:tdot 1.2s infinite ease-in-out .2s"></span>
+          <span class="thinking-dot" style="width:8px;height:8px;border-radius:50%;background:#00c2e0;display:inline-block;animation:tdot 1.2s infinite ease-in-out .4s"></span>
+        </div>
+        <span style="font-weight:700;color:#0c1a35;font-size:.88rem">Still working&hellip;</span>
+      </div>
+      <p id="still-working-msg" style="font-size:.78rem;color:#4a6080;margin:0;line-height:1.5">Fetching your Google PageSpeed score &amp; running final checks. This can take up to 30 seconds.</p>
     </div>
   </div>
 </section>
@@ -965,7 +978,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 <!-- ── FOOTER ── -->
 <footer class="footer">
   <div class="fin">
-    <a href="https://chealthconnections.com" target="_blank" rel="noopener">
+    <a href="/">
       <img src="images/igoe-scan-logo.png" alt="IGOE SCAN" class="flogo" loading="lazy" style="mix-blend-mode:multiply;height:28px"/>
     </a>
     <div style="font-size:.8rem;font-weight:700;color:var(--t2);margin-bottom:10px">
@@ -2099,7 +2112,26 @@ async function startScan() {
   try { robots=await fetchRobotsTxt(origin); } catch(e) { robots=''; }
   /* Fetch PageSpeed in parallel — non-blocking */
   var psPromise = fetchPageSpeed(origin);
-  await pp; await sleep(400);
+  await pp;
+
+  /* Show "still working" if we're still waiting after animation */
+  var swEl = document.getElementById('still-working');
+  var swMsg = document.getElementById('still-working-msg');
+  var swTimer = setTimeout(function(){
+    if(swEl) swEl.style.display='block';
+  }, 200);
+  /* Update message after 10s to reassure user */
+  var swTimer2 = setTimeout(function(){
+    if(swMsg) swMsg.textContent='Almost there — running your Google PageSpeed test and compiling 9 categories of results\u2026';
+  }, 10000);
+  /* Update again after 25s */
+  var swTimer3 = setTimeout(function(){
+    if(swMsg) swMsg.textContent='Nearly done \u2014 large or complex sites take a little longer. Your report is coming\u2026';
+  }, 25000);
+
+  await sleep(400);
+  clearTimeout(swTimer); clearTimeout(swTimer2); clearTimeout(swTimer3);
+  if(swEl) swEl.style.display='none';
   document.getElementById('loading-section').style.display='none';
   var cleanedDomain=origin.replace('https://','').replace('http://','');
   var psData = null;
