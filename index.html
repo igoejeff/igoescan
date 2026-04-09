@@ -247,6 +247,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 /* ── LOADING ──────────────────────────────────────── */
 #loading-section{display:none;padding:72px 2rem;max-width:520px;margin:0 auto;text-align:center}
 @keyframes tdot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+@keyframes swpulse{0%{transform:translateX(-100%)}50%{transform:translateX(220%)}100%{transform:translateX(220%)}}
 .lwrap{background:var(--white);border-radius:20px;padding:46px 38px;border:1px solid var(--bdr);box-shadow:var(--shadow-md)}
 .lorb{width:64px;height:64px;margin:0 auto 20px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;animation:orb 2s ease-in-out infinite}
 @keyframes orb{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(26,80,150,0)}50%{transform:scale(1.05);box-shadow:0 0 0 12px rgba(26,80,150,.07)}}
@@ -663,6 +664,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
     <div class="lorb"><i class="fas fa-search"></i></div>
     <div class="ltitle">Scanning <span class="ldomain" id="loader-domain-name"></span></div>
     <p class="lsub">Running 80+ checks across 9 categories&hellip;</p>
+    <p id="scan-time-note" style="font-size:.78rem;color:#4a6080;margin:-6px 0 10px;opacity:.85">&#9203; This typically takes 30–60 seconds &mdash; please don&rsquo;t close this tab.</p>
     <div class="prog-track"><div class="progress-bar" id="progress-bar"></div></div>
     <div class="slist">
       <div class="lstep" id="step-1"><div class="step-orb"><i class="fas fa-globe"></i></div><span>Connecting via 4 proxies&hellip;</span></div>
@@ -673,16 +675,20 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
       <div class="lstep" id="step-6"><div class="step-orb"><i class="fas fa-file-alt"></i></div><span>Generating report&hellip;</span></div>
     </div>
     <!-- Still working message shown after steps complete -->
-    <div id="still-working" style="display:none;margin-top:22px;padding:14px 20px;background:rgba(0,194,224,0.08);border:1px solid rgba(0,194,224,0.25);border-radius:12px;text-align:center">
-      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px">
-        <div style="display:flex;gap:5px;align-items:center">
-          <span class="thinking-dot" style="width:8px;height:8px;border-radius:50%;background:#00c2e0;display:inline-block;animation:tdot 1.2s infinite ease-in-out"></span>
-          <span class="thinking-dot" style="width:8px;height:8px;border-radius:50%;background:#00c2e0;display:inline-block;animation:tdot 1.2s infinite ease-in-out .2s"></span>
-          <span class="thinking-dot" style="width:8px;height:8px;border-radius:50%;background:#00c2e0;display:inline-block;animation:tdot 1.2s infinite ease-in-out .4s"></span>
+    <div id="still-working" style="display:none;margin-top:22px;padding:16px 20px;background:rgba(0,194,224,0.08);border:1px solid rgba(0,194,224,0.3);border-radius:14px;text-align:center">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px">
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="width:9px;height:9px;border-radius:50%;background:#00c2e0;display:inline-block;animation:tdot 1.2s infinite ease-in-out"></span>
+          <span style="width:9px;height:9px;border-radius:50%;background:#00c2e0;display:inline-block;animation:tdot 1.2s infinite ease-in-out .22s"></span>
+          <span style="width:9px;height:9px;border-radius:50%;background:#00c2e0;display:inline-block;animation:tdot 1.2s infinite ease-in-out .44s"></span>
         </div>
-        <span style="font-weight:700;color:#0c1a35;font-size:.88rem">Still working&hellip;</span>
+        <span style="font-weight:700;color:#0c1a35;font-size:.92rem">Compiling your full report&hellip;</span>
       </div>
-      <p id="still-working-msg" style="font-size:.78rem;color:#4a6080;margin:0;line-height:1.5">Fetching your Google PageSpeed score &amp; running final checks. This can take up to 30 seconds.</p>
+      <p id="still-working-msg" style="font-size:.8rem;color:#4a6080;margin:0 0 10px;line-height:1.6">Fetching your Google PageSpeed score &amp; running all 9 category checks.<br>Large or complex sites can take up to 60 seconds &mdash; almost there!</p>
+      <!-- Mini animated progress pulse -->
+      <div style="height:4px;border-radius:4px;background:rgba(0,194,224,0.15);overflow:hidden;margin:0 auto;max-width:260px">
+        <div id="sw-pulse" style="height:100%;width:30%;background:#00c2e0;border-radius:4px;animation:swpulse 1.6s ease-in-out infinite"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -737,27 +743,27 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
       <div class="se-row">
         <div class="se-cell" id="se-A" style="background:#f0fdf6">
           <div class="se-letter" style="color:#18c45a">A</div>
-          <div class="se-range">85–100</div>
+          <div class="se-range">93–100</div>
           <div class="se-meaning">AI-ready. ChatGPT &amp; Google AI can find and cite you.</div>
         </div>
         <div class="se-cell" id="se-B" style="background:#eff6ff">
           <div class="se-letter" style="color:#2176d9">B</div>
-          <div class="se-range">70–84</div>
-          <div class="se-meaning">Good foundation. A few fixes could get you to the top.</div>
+          <div class="se-range">85–92</div>
+          <div class="se-meaning">Good foundation. A few targeted fixes could get you to the top.</div>
         </div>
         <div class="se-cell" id="se-C" style="background:#fffbeb">
           <div class="se-letter" style="color:#f5bb00">C</div>
-          <div class="se-range">50–69</div>
+          <div class="se-range">70–84</div>
           <div class="se-meaning">Partial visibility. AI tools may miss or skip your practice.</div>
         </div>
         <div class="se-cell" id="se-D" style="background:#fff7ed">
           <div class="se-letter" style="color:#f07000">D</div>
-          <div class="se-range">30–49</div>
+          <div class="se-range">50–69</div>
           <div class="se-meaning">Low visibility. Patients asking AI won&rsquo;t find you.</div>
         </div>
         <div class="se-cell" id="se-F" style="background:#fff1f1">
           <div class="se-letter" style="color:#e82020">F</div>
-          <div class="se-range">0–29</div>
+          <div class="se-range">0–49</div>
           <div class="se-meaning">Invisible to AI. Critical issues need immediate attention.</div>
         </div>
       </div>
@@ -1057,8 +1063,8 @@ function cleanDomain(raw) {
 }
 function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
 function gradeFromScore(s) {
-  if (s >= 85) return 'A'; if (s >= 70) return 'B';
-  if (s >= 50) return 'C'; if (s >= 30) return 'D'; return 'F';
+  if (s >= 93) return 'A'; if (s >= 85) return 'B';
+  if (s >= 70) return 'C'; if (s >= 50) return 'D'; return 'F';
 }
 function gradeColor(g) {
   return {A:'#18c45a',B:'#2176d9',C:'#f5bb00',D:'#f07000',F:'#e82020'}[g]||'#e82020';
@@ -2114,28 +2120,25 @@ async function startScan() {
   var psPromise = fetchPageSpeed(origin);
   await pp;
 
-  /* Show "still working" if we're still waiting after animation */
+  /* Show "still working" immediately after steps finish — stays until results load */
   var swEl = document.getElementById('still-working');
   var swMsg = document.getElementById('still-working-msg');
-  var swTimer = setTimeout(function(){
-    if(swEl) swEl.style.display='block';
-  }, 200);
-  /* Update message after 10s to reassure user */
+  if(swEl) swEl.style.display='block';
+  /* Update message every ~15s to keep user calm */
   var swTimer2 = setTimeout(function(){
-    if(swMsg) swMsg.textContent='Almost there — running your Google PageSpeed test and compiling 9 categories of results\u2026';
-  }, 10000);
-  /* Update again after 25s */
+    if(swMsg) swMsg.innerHTML='Running all 9 category checks (Video, Social, HIPAA, Booking&hellip;)<br>Hang tight &mdash; your report is almost ready!';
+  }, 15000);
   var swTimer3 = setTimeout(function(){
-    if(swMsg) swMsg.textContent='Nearly done \u2014 large or complex sites take a little longer. Your report is coming\u2026';
-  }, 25000);
+    if(swMsg) swMsg.innerHTML='Nearly done &mdash; this site has a lot to analyze. Your full report is coming now&hellip;';
+  }, 35000);
 
-  await sleep(400);
-  clearTimeout(swTimer); clearTimeout(swTimer2); clearTimeout(swTimer3);
+  /* Wait for PageSpeed — this is the slowest part (also captures the result) */
+  var psData = null;
+  try { psData = await psPromise; } catch(e) {}
+  clearTimeout(swTimer2); clearTimeout(swTimer3);
   if(swEl) swEl.style.display='none';
   document.getElementById('loading-section').style.display='none';
   var cleanedDomain=origin.replace('https://','').replace('http://','');
-  var psData = null;
-  try { psData = await psPromise; } catch(e) {}
   if (blocked) {
     var partial=buildBlockedResults(origin);
     partial.ai=checkAICrawlers(robots,'');
